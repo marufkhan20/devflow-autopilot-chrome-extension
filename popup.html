@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>DevFlow Autopilot</title>
+    <meta charset="utf-8">
+    <style>
+        :root {
+            --bg: #111827;
+            --surface: #1f2937;
+            --border: #374151;
+            --text: #f9fafb;
+            --muted: #9ca3af;
+            --blue: #60a5fa;
+            --red: #f87171;
+            --btn-blue: #2563eb;
+            --btn-blue-h: #3b82f6;
+            --btn-red: #dc2626;
+            --btn-red-h: #ef4444;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            width: 340px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            padding: 14px;
+        }
+
+        ::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #4b5563;
+            border-radius: 4px;
+        }
+
+        /* ── Header ── */
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 14px;
+        }
+
+        .title {
+            font-size: 1.15rem;
+            font-weight: 700;
+            background: linear-gradient(to right, #60a5fa, #a855f7);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* ── Record button ── */
+        .record-btn {
+            width: 100%;
+            padding: 10px 16px;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            border: none;
+            cursor: pointer;
+            color: white;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: background-color 0.2s, box-shadow 0.2s;
+        }
+
+        .record-btn svg {
+            width: 15px;
+            height: 15px;
+            flex-shrink: 0;
+        }
+
+        .record-btn.start {
+            background: var(--btn-blue);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, .25);
+        }
+
+        .record-btn.start:hover {
+            background: var(--btn-blue-h);
+        }
+
+        .record-btn.stop {
+            background: var(--btn-red);
+            box-shadow: 0 4px 12px rgba(239, 68, 68, .25);
+        }
+
+        .record-btn.stop:hover {
+            background: var(--btn-red-h);
+        }
+
+        .record-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* ── Section header ── */
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .section-title {
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: .06em;
+        }
+
+        .step-count {
+            font-size: 0.7rem;
+            color: var(--muted);
+        }
+
+        .clear-btn {
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: var(--red);
+            background: none;
+            border: none;
+            cursor: pointer;
+        }
+
+        .clear-btn:hover {
+            color: #fca5a5;
+        }
+
+        /* ── Blueprint list ── */
+        .blueprint-list {
+            max-height: 220px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            padding-right: 2px;
+        }
+
+        /* ── Blueprint item ── */
+        .blueprint-item {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 7px;
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            padding: 8px 8px 8px 10px;
+        }
+
+        .step-index {
+            flex-shrink: 0;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: var(--border);
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--muted);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 2px;
+        }
+
+        .content {
+            overflow: hidden;
+            flex: 1;
+        }
+
+        .step-header {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            flex-wrap: wrap;
+            margin-bottom: 3px;
+        }
+
+        /* ── Badges ── */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+            font-size: 9px;
+            font-weight: 700;
+            padding: 2px 6px;
+            border-radius: 4px;
+            text-transform: uppercase;
+            letter-spacing: .04em;
+        }
+
+        .badge-fill {
+            background: rgba(96, 165, 250, .15);
+            color: #93c5fd;
+        }
+
+        .badge-click {
+            background: rgba(167, 139, 250, .15);
+            color: #c4b5fd;
+        }
+
+        .badge-file {
+            background: rgba(251, 191, 36, .12);
+            color: #fcd34d;
+        }
+
+        .badge-file-warn {
+            background: rgba(245, 158, 11, .2);
+            color: #fbbf24;
+        }
+
+        .badge-check {
+            background: rgba(52, 211, 153, .15);
+            color: #6ee7b7;
+        }
+
+        .badge-select {
+            background: rgba(251, 146, 60, .15);
+            color: #fdba74;
+        }
+
+        .selector {
+            font-size: 10px;
+            font-family: monospace;
+            color: var(--blue);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            opacity: .85;
+        }
+
+        .value {
+            font-size: 0.8rem;
+            color: #e5e7eb;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-top: 1px;
+        }
+
+        /* ── Delete button ── */
+        .delete-btn {
+            flex-shrink: 0;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 4px;
+            color: var(--muted);
+            opacity: 0;
+            transition: opacity .15s, color .15s, background .15s;
+            display: flex;
+            align-items: center;
+        }
+
+        .blueprint-item:hover .delete-btn {
+            opacity: 1;
+        }
+
+        .delete-btn:hover {
+            color: var(--red);
+            background: var(--border);
+        }
+
+        .delete-btn svg {
+            width: 13px;
+            height: 13px;
+        }
+
+        /* ── States ── */
+        .empty-state {
+            text-align: center;
+            padding: 16px;
+            font-size: 0.8rem;
+            color: var(--muted);
+            font-style: italic;
+        }
+
+        .empty-state.bordered {
+            border: 1px dashed var(--border);
+            border-radius: 6px;
+        }
+
+        .error-state {
+            font-size: 0.72rem;
+            color: var(--red);
+            padding: 10px;
+            background: rgba(127, 29, 29, .3);
+            border: 1px solid #991b1b;
+            border-radius: 6px;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="header">
+        <h1 class="title">DevFlow Autopilot</h1>
+    </div>
+
+    <button id="recordBtn" class="record-btn start">
+        <svg id="recordIcon" fill="currentColor" viewBox="0 0 20 20">
+            <circle cx="10" cy="10" r="6" fill="currentColor" />
+        </svg>
+        <span id="recordText">Start Recording</span>
+    </button>
+
+    <div class="section-header">
+        <h2 class="section-title">Recorded Steps &nbsp;<span id="stepCount" class="step-count"></span></h2>
+        <button id="clearBtn" class="clear-btn">Clear All</button>
+    </div>
+
+    <div id="blueprintList" class="blueprint-list">
+        <div class="empty-state">Loading…</div>
+    </div>
+
+    <script src="popup.js"></script>
+</body>
+
+</html>

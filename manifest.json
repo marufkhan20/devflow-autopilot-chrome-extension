@@ -1,0 +1,27 @@
+{
+  "manifest_version": 3,
+  "name": "DevFlow Autopilot",
+  "version": "1.0",
+  "description": "Record form inputs and replay them automatically.",
+  "permissions": [
+    "storage",
+    "activeTab",
+    "scripting",
+    "tabs"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["contentScript.js"]
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html"
+  }
+}
