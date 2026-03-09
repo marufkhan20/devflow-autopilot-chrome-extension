@@ -284,7 +284,76 @@
             height: 13px;
         }
 
-        /* ── States ── */
+        /* ── Action toolbar ── */
+        .toolbar {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 12px;
+        }
+
+        .toolbar-btn {
+            flex: 1;
+            padding: 7px 10px;
+            border-radius: 6px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            cursor: pointer;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            color: var(--muted);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            transition: background .15s, color .15s, border-color .15s;
+        }
+
+        .toolbar-btn:hover {
+            background: var(--border);
+            color: var(--text);
+            border-color: #4b5563;
+        }
+
+        .toolbar-btn.import:hover {
+            border-color: #60a5fa;
+            color: #93c5fd;
+        }
+
+        .toolbar-btn.export:hover {
+            border-color: #a78bfa;
+            color: #c4b5fd;
+        }
+
+        .toolbar-btn svg {
+            width: 12px;
+            height: 12px;
+            flex-shrink: 0;
+        }
+
+        /* ── Toast notification ── */
+        .toast {
+            position: fixed;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1f2937;
+            border: 1px solid var(--border);
+            color: var(--text);
+            font-size: 0.72rem;
+            font-weight: 600;
+            padding: 6px 14px;
+            border-radius: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, .4);
+            opacity: 0;
+            transition: opacity .2s;
+            pointer-events: none;
+            white-space: nowrap;
+        }
+
+        .toast.show {
+            opacity: 1;
+        }
+
         .empty-state {
             text-align: center;
             padding: 16px;
@@ -331,6 +400,28 @@
     <div id="blueprintList" class="blueprint-list">
         <div class="empty-state">Loading…</div>
     </div>
+
+    <!-- Share toolbar -->
+    <div class="toolbar" style="margin-top:10px;">
+        <button id="exportBtn" class="toolbar-btn export" title="Export blueprint as JSON">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+            </svg>
+            Export JSON
+        </button>
+        <label id="importLabel" class="toolbar-btn import" title="Import blueprint from JSON">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+            </svg>
+            Import JSON
+            <input type="file" id="importFile" accept=".json" style="display:none;">
+        </label>
+    </div>
+
+    <!-- Toast -->
+    <div id="toast" class="toast"></div>
 
     <script src="popup.js"></script>
 </body>

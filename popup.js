@@ -134,7 +134,96 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    chrome.storage.onChanged.addListener((changes, namespace) => {
-        if (namespace === 'local' && changes[currentUrl]) loadBlueprints();
+    // ── Export ──────────────────────────────────────────────
+    document.getElementById('exportBtn').addEventListener('click', () => {
+        chrome.storage.local.get([currentUrl], (result) => {
+            const blueprint = result[currentUrl] || [];
+            if (blueprint.length === 0) {
+                showToast('⚠ Nothing recorded to export.');
+                return;
+            }
+
+            const payload = {
+                meta: {
+                    exportedAt: new Date().toISOString(),
+                    url: currentUrl,
+                    stepCount: blueprint.length,
+                    tool: 'DevFlow Autopilot v1'
+                },
+                blueprint
+            };
+
+            const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            // Generate a safe filename from the URL
+            const safeName = currentUrl
+                .replace(/https?:\/\//, '')
+                .replace(/[^a-z0-9]+/gi, '_')
+                .substring(0, 60);
+            a.href = url;
+            a.download = `devflow_${safeName}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+            showToast(`✓ Exported ${blueprint.length} step${blueprint.length > 1 ? 's' : ''}`);
+        });
     });
+
+    // ── Import ──────────────────────────────────────────────
+    document.getElementById('importFile').addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            try {
+                const parsed = JSON.parse(ev.target.result);
+
+                // Accept both {meta, blueprint} and a raw array
+                let importedSteps = Array.isArray(parsed) ? parsed : parsed.blueprint;
+
+                if (!Array.isArray(importedSteps) || importedSteps.length === 0) {
+                    showToast('✗ Invalid file — no steps found.');
+                    return;
+                }
+
+                // Merge with existing steps, deduplicating by selector+type
+                chrome.storage.local.get([currentUrl], (result) => {
+                    let existing = result[currentUrl] || [];
+
+                    importedSteps.forEach(step => {
+                        const dup = existing.findIndex(s =>
+                            s.selector === step.selector &&
+                            s.type === step.type &&
+                            s.timestamp === step.timestamp
+                        );
+                        if (dup !== -1) {
+                            existing[dup] = step; // overwrite matching step
+                        } else {
+                            existing.push(step);
+                        }
+                    });
+
+                    chrome.storage.local.set({ [currentUrl]: existing }, () => {
+                        loadBlueprints();
+                        showToast(`✓ Imported ${importedSteps.length} step${importedSteps.length > 1 ? 's' : ''}`);
+                    });
+                });
+            } catch (_) {
+                showToast('✗ Failed to parse JSON file.');
+            }
+        };
+        reader.readAsText(file);
+        // Reset so same file can be imported again if needed
+        e.target.value = '';
+    });
+
+    // ── Toast helper ────────────────────────────────────────
+    function showToast(message) {
+        const toast = document.getElementById('toast');
+        toast.textContent = message;
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 2800);
+    }
 });
+
